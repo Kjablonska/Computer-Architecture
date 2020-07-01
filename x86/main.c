@@ -4,7 +4,7 @@
 
 #define ERROR   -1
 
-void rotbmp1(void *img, int width);
+void rotbmp1(void *img, void *img_dest, int width);
 
 #pragma pack(push, 1)
 typedef struct {
@@ -76,7 +76,10 @@ unsigned char *processImage(char* filename) {
     unsigned char *data = (unsigned char*) malloc(imageDataSize);
     fread(data, sizeof(unsigned char), imageDataSize, imgFile);
 
-    rotbmp1(data, imageWidth);
+    unsigned char *data_empty = (unsigned char*) malloc(imageDataSize);
+    fread(data_empty, sizeof(unsigned char), imageDataSize, imgFile);
+
+    rotbmp1(data, data_empty, imageWidth);
 
     if (!saveImage(bmpHead, data, imageDataSize))
         printf("Image saved successfully.\n");
