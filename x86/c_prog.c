@@ -53,9 +53,9 @@ int main(int argc, char* argv[]) {
     cox_d = 0;
     coy_d = 0;
 
-    // data[] bitowo:
+    // data[] binarnie:
     int bits[N*8];
-    for(int j = 0; j < N;j++){   // loop on integers
+    for(int j = 0; j < N;j++) {
         for(int i = 0; i < 8;++i){
             bits[8*j+i] = data[j] & (1 << i) ? 1 : 0;
             printf("%d", bits[8*j+i]);
@@ -72,9 +72,9 @@ int main(int argc, char* argv[]) {
 
         for (int j = 0; j < width; j++) {
             // Calculating position
-            //cox = j;
 
             // Find source.
+
             for (int k = 0; k < 8; k++) {
                 source = cox_s + coy_s * width;
                 printf("Source %d, %d, bit number %d\n", source, data[source], bit_number);
@@ -87,6 +87,7 @@ int main(int argc, char* argv[]) {
                 // Forming a byte.
                 byte += bit;
             }
+
             printf("byte %d\n\n", byte);
             coy_s = width - 1;
             bit_number++;
@@ -97,11 +98,6 @@ int main(int argc, char* argv[]) {
 
             // Swap created byte with destination.
             rot[dest] = byte;
-            //printf("Dest before swap %d, %d\t\t\n", dest, data[dest]);
-            //printf("Byte %d\n", byte);
-            //printf("Swap \n");
-
-            //printf("Created byte %d\n", byte);
             byte = 0;
 
             cox_d++;
@@ -119,14 +115,10 @@ int main(int argc, char* argv[]) {
         bit_number = 0;
     }
 
-    printf("\n\n");
-    for (int k = 0; k < N; k++) {
-        printf("%d  ", rot[k]);
-    }
-
+    // Wyświetl tablicę w postaci binarnej.
     printf("\n\n");
     int bits_rot[N*8];
-    for(int j = 0; j < N;j++){   // loop on integers
+    for(int j = 0; j < N;j++){
         for(int i = 0; i < 8;++i){
             bits_rot[8*j+i] = rot[j] & (1 << i) ? 1 : 0;
             printf("%d", bits_rot[8*j+i]);
