@@ -114,8 +114,20 @@ endColumnLoop:
 endRowLoop:
 	mov		ecx, 	width		; rowLoop counter
     add		esp,	4
-	pop		esi
-	;pop		edi
+	pop		eax
+
+	mov 	ecx, [ebp + 16]
+	imul	ecx, width		; ecx = row_size * width
+	mov		eax, img
+	mov		ebx, dest_image
+
+copy:
+	mov	dl, [ebx]
+	mov	[eax], dl
+
+	inc	eax
+	inc ebx
+	loop copy
 
 ; Epilogue
 	pop		ebp
