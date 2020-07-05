@@ -8,7 +8,7 @@ coy_d 		dw 0			; y coordinate of destination byte.
 dest		dw 0
 source		dw 0
 
-bajt		dw 0
+newByte		dw 0
 
 section	.text
 global  rotbmp1
@@ -18,112 +18,104 @@ rotbmp1:
 	push	ebp
 	mov		ebp, 	esp
 
-; Pushing registers to the stack.
-	push	ebx
-	push	edi
-	push	esi
-	;push	ecx
-;
-    %define     img         	[ebp + 8]
-	%define     width	        [ebp + 12]
 
-	mov		esi,	[ebp + 8]
+    %define     img     [ebp + 8]
+	%define     width	[ebp + 12]
+
+; [(bit per pixel * width + 31 )/ 32 ] *4
 
 	mov		edx,	width
-	and		edx,	31		; % 32
+	add		edx,	31
+	shr		edx,	5			; =/32
+	shl		edx,	2			; =*4
+	push 	edx					; row_size in bytes [ebp + 16]
 
-; Pushing result on stack.
-skip:
-	add		edx,	width
-	sar		edx,	3		  	; Dividing result by 8 to get number of bytes.
-	push	edx					; byte width at [ebp - 16].
+	; Allocate memory of the size of row_size * width.
+	mov			eax,	width
+	imul		eax,	edx
+	push		eax
+	%define		dest_image		[ebp + 20]
 
-	mov ebx, 0
-	mov edi, 0
+	mov		esi, img
+	mov		edi, dest_image
 
-	mov		ecx,	[ebp - 16]
-	mov		esi,	[ebp + 8]
+	mov		ecx, width
+	mov		ah, 0
 
 rowLoop:
-    cmp		ebx,	width		; Comparing against image height (= width).
+    cmp		ecx,	width		; Comparing against image height (= width).
 	jz		endRowLoop
 
-; columnLoop (j) takes each bit in byte in the row.
+	push 	ecx
+	mov 	ecx, width				; columnLoop counter
+
 columnLoop:
-    cmp		edi,	width
-	jz		endColumnLoop
+	loop	endColumnLoop
 
+	;xor		ah, ah				; ah = bit_number = 0
+	mov		al, 7				; al = shift = 7
+	mov		dword[newByte], 0
+	push 	ecx
 	mov		ecx, 8
-	mov		ah, 0				; ah = bit_number
-	mov		al, 7				; al = shift
-	mov		cl, 0
-
-	; createByte should return byte to be swapped.
-	call 	createByte			; segmentation fault
+	call 	createByte
+	pop		ecx					; Restore columnLoop counter
 
 	; coy_s = width - 1;
-	mov 	dl, 	width
-	sub		dl,		1
-	mov		[coy_s],	dl
+	mov 	ebx, 	width
+	dec		ebx,
+	mov		dword[coy_s], ebx
 
 	; Calculate destination index.
-	mov 	ebx, [coy_d]
-	mov 	eax, width
-	;sub 	ebx, 1
-	imul 	eax, ebx			; coy_d * width
+	mov 	edx, width
+	imul 	edx, dword[coy_d]			; coy_d * width
 ;
 	mov		ebx, [cox_d]
-	;sub 	ebx, 1
-	add 	eax, ebx			; dest = cox_d + coy_d * width;
-	mov		[dest], dh
+	add 	edx, ebx			; dest = cox_d + coy_d * width;
+	mov		[dest], edx
 
-	; Replace byte in data[dest] with byte reutrned by createByte - TO DO.
-	; mov	[dest], byte
+	; Replace byte in data[dest] with byte returned by createByte.
+	add		dword[dest], edi
 
-	; byte = 0.
-	; xor byte, byte
+	;mov		[dest],	ebx
+	;mov		ebx, [newByte]
+	;mov		[dest], ebx
+	mov		[newByte], ebx
+	xchg	[dest], ebx
 
 	; Increase cox_d.
-	mov		dh,	[cox_d]
-	inc		dh
-	mov		[cox_d],	dh
-;
-	; if bit_number > 7, then bit_number = 0.
-	cmp		ah,	8
-	mov		ah,	0
+	inc		dword[cox_d]
 
-    inc		edi                 ; Increase column (j) counter.
-	jmp		columnLoop
+	inc		ah
+	; if bit_number > 7, then bit_number = 0.
+	cmp		ah,	7
+	xor		ah, ah
+
 
 endColumnLoop:
-	inc		ebx                 ; Increase column (i) counter.
+	;inc		ebx                 ; Increase column (i) counter.
+	pop		ecx					; rowLoop counter
 
-	; Increase coy_d.
-	mov		dl, [cox_d]
-	inc		dl
-	mov		[coy_d], dl
+	; coy_d++
+	inc		dword[coy_d]
 
-	mov		dl, 0
-	mov		[cox_d], dl			; cox_d = 0
+	; cox_d = 0
+	mov		dword[cox_d], 0
 
-	; Increase cox_s.
-	mov		dl, [cox_s]
-	inc		dl
-	mov		[cox_s], dl
+	; cox_s++
+	inc		dword[cox_s]
 
 	; coy_s = width - 1.
-	mov		eax, 	width
-	sub		eax, 	1
-	mov		[coy_s], 	eax
+	mov		ebx,	width
+	dec		ebx
+	mov		dword[coy_s], ebx
 
-	mov		ah,	0				; bit_number = 0.
 	jmp		rowLoop
 
 endRowLoop:
+	mov		ecx, 	width		; rowLoop counter
     add		esp,	4
 	pop		esi
-	pop		edi
-	pop 	ebx
+	;pop		edi
 
 ; Epilogue
 	pop		ebp
@@ -136,42 +128,42 @@ createByte:
 	; initial value:		ah, 0			; ah = bit_number
 	; initial value:		al, 7			; al = shift
 
-
 	; source index = cox_s + coy_s * width
+
 	mov 	ebx, [coy_s]
-	mov 	eax, width
-	;sub 	ebx, 1
-	imul 	eax, ebx			; coy_s * width
-
+	mov 	edx, width
+	imul 	edx, ebx			; coy_s * width
 	mov		ebx, [cox_s]
-	;sub 	ebx, 1
-	add 	eax, ebx			; source = cox_s + coy_s * width;
-	mov		[source], dh
+	add 	edx, ebx			; source = cox_s + coy_s * width;
 
+	mov		[source], edx		; source index
+
+	push	ecx					; Push loop counter to use cl register.
+	xor 	ebx, ebx
 	; bit = data[source] AND  (1 SHL bit_number)
 	mov		cl, ah				; ah = bit_number
-	mov		dl, 1	; dl
+	mov		dl, 1		; dl
 	shl		dl, cl				; 1 SHL bit_number
-	inc		cl
+	inc		cl					; bit_number++
 	mov		ah, cl
 
-	mov		eax, [source]
-	add		eax, esi			; eax = data[eax] (???)
-	mov		dh, [eax]
-	and		dh, dl				; dh = bit
+	mov		ebx, [source]
+	add		ebx, esi			; ebx = data[source]
+	add		ebx, [esi + 10]		; offset?
+	mov		dh, [ebx]
+	and		dh, dl				; bh = bit
 
-	;; bit SHL shift
+	; bit SHL shift
 	mov		cl, al
 	shl		dh, cl
-	dec		cl
+	dec		cl					; shift--
 	mov 	al, cl
-
+;
 	; byte += bit
-	; add 	byte, dh
-
+	add 	[newByte], dh
+;
 	; coy_s--
-	mov 	dl,	[coy_s]
-	dec		dl
-	mov		[coy_s], dl
+	dec		dword[coy_s]
+	pop		ecx					; exc = loop counter
 
 	loop createByte

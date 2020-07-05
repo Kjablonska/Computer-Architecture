@@ -12,8 +12,8 @@ typedef struct {
 	unsigned long  size;
 	unsigned short reserved1;
 	unsigned short reserved2;
-	unsigned long  offBits;
-	unsigned long  bitSize;
+	unsigned long  offset;
+	unsigned long  dibHeaderSize;
 	long  width;
 	long  height;
 	short planes;
@@ -22,10 +22,8 @@ typedef struct {
 	unsigned long  sizeImage;
 	long xPelsPerMeter;
 	long yPelsPerMeter;
-	unsigned long  biClrUsed;
-	unsigned long  biClrImportant;
-	unsigned long  RGBQuad_0;
-	unsigned long  RGBQuad_1;
+    long palette;
+    long impColors;
 } bmpHeader;
 #pragma pack(pop)
 
@@ -75,7 +73,7 @@ unsigned char *processImage(char* filename) {
 
     unsigned char *data = (unsigned char*) malloc(imageDataSize);
     fread(data, sizeof(unsigned char), imageDataSize, imgFile);
-
+    printf("%d\n", sizeof(bmpHead));
     rotbmp1(data, imageWidth);
 
     if (!saveImage(bmpHead, data, imageDataSize))
@@ -99,3 +97,6 @@ int main (int argc, char* argv[]) {
     }
     return 0;
 }
+
+// x = row_size * width
+// sub esp, x
