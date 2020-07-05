@@ -149,7 +149,7 @@ createByte:
 
 	mov		ebx, [source]
 	add		ebx, esi			; ebx = data[source]
-	add		ebx, [esi + 10]		; offset?
+	;add		ebx, [esi + 10]		; offset?
 	mov		dh, [ebx]
 	and		dh, dl				; bh = bit
 
