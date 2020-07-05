@@ -39,7 +39,7 @@ rotbmp1:
 	mov		esi, img
 	mov		edi, dest_image
 
-	mov		ecx, width
+	mov		ecx, 1
 	mov		ah, 0
 
 rowLoop:
@@ -94,7 +94,7 @@ columnLoop:
 endColumnLoop:
 	;inc		ebx                 ; Increase column (i) counter.
 	pop		ecx					; rowLoop counter
-
+	inc		ecx
 	; coy_d++
 	inc		dword[coy_d]
 

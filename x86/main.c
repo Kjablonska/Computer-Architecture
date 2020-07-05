@@ -24,6 +24,8 @@ typedef struct {
 	long yPelsPerMeter;
     long palette;
     long impColors;
+    long a;
+    long b;
 } bmpHeader;
 #pragma pack(pop)
 
@@ -71,10 +73,17 @@ unsigned char *processImage(char* filename) {
     unsigned long imageDataSize = sizeof(unsigned char) * imageHeight * actualImageWidth / 8;
     printf("Bitmap size:\t\t%ld\n", imageDataSize);
 
+    //unsigned char *data = (unsigned char*) malloc(imageDataSize - 54);
+    //fread(data, sizeof(unsigned char), imageDataSize - 54, imgFile);
     unsigned char *data = (unsigned char*) malloc(imageDataSize);
     fread(data, sizeof(unsigned char), imageDataSize, imgFile);
-    printf("%d\n", sizeof(bmpHead));
-    rotbmp1(data, imageWidth);
+    //printf("%d\n", sizeof(bmpHead));
+/*
+    for (int i = 54; i < imageDataSize; i++) {
+        *(data + i)  = fgetc(imgFile);
+    }
+*/
+    //rotbmp1(data, imageWidth);
 
     if (!saveImage(bmpHead, data, imageDataSize))
         printf("Image saved successfully.\n");
