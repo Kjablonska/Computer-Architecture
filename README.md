@@ -31,6 +31,8 @@ Colors of pixels are interpolated using fixed-point arithmetics (16.16 format).
 # Emaple outputs of the program  
 (PINK) 16763080 - (YELLOW) 16762880 - (BLUE) 2634473 – (GREY) 988190  
    
-![alt text](https://github.com/Kjablonska/Qt-SchoolPlanner/blob/master/assets/main-view.png?raw=true)  
+![alt text](https://github.com/Kjablonska/ECOAR/blob/master/assets/interpolation1.png?raw=true)  
   
 (RED) 16711680 - (GREEN) 65280 - (BLUE) 255 - (WHITE) 16777215  
+  
+![alt text](https://github.com/Kjablonska/ECOAR/blob/master/assets/Interpolation2.png?raw=true)  
